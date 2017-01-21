@@ -1,0 +1,19 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "outDir": "build-ts/",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

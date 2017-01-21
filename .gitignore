@@ -1,0 +1,6 @@
+.DS_Store
+/build/
+/build-ts/
+/node_modules/
+/.idea/
+npm-debug.log
