@@ -155,15 +155,16 @@ export class UiStore {
 
   @observable loginRequest: RequestState
   @action login = (username: string, password: string) => this.go(async () => {
-    this.loginRequest = new RequestState()
+    const req = new RequestState()
+    this.loginRequest = req
     try {
       await this.api.login(username, password)
-      this.loginRequest.succeed()
+      req.succeed()
       this.unauthorized = false
       this.getMe().then()
       this.goSearch()
     } catch (e) {
-      this.loginRequest.fail(e.message)
+      req.fail(e.message)
       this.goLogin()
     }
   })
@@ -181,16 +182,17 @@ export class UiStore {
 
   @observable getPostSummariesRequest: RequestState
   @action refreshPostSummaries = async () => {
-    this.getPostSummariesRequest = new RequestState()
+    const req = new RequestState()
+    this.getPostSummariesRequest = req
     try {
       const posts = await this.api.getPosts()
       runInAction(() => {
-        this.getPostSummariesRequest.succeed()
+        req.succeed()
         this.postSummariesInitialized = true
         this.postSummaries = posts
       })
     } catch (e) {
-      this.getPostSummariesRequest.fail(e.message)
+      req.fail(e.message)
     }
   }
 
@@ -206,16 +208,17 @@ export class UiStore {
 
   @observable savePostRequest: RequestState
   @action saveCurrentPost = async () => {
-    this.savePostRequest = new RequestState()
+    const req = new RequestState()
+    this.savePostRequest = req
     try {
       if (this.post.id == null) {
         await this.addPost(this.post)
       } else {
         await this.savePost(this.post)
       }
-      this.savePostRequest.succeed()
+      req.succeed()
     } catch (e) {
-      this.savePostRequest.fail(e.message)
+      req.fail(e.message)
       throw e
     }
   }
