@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Comp, sleep, sleepMin} from 'app/utils'
-import {Sizes} from 'app/styles'
+import {Sizes, Colors} from 'app/styles'
 import styled from 'styled-components'
 import {uiStore} from 'app/store'
 import {SearchRoute, NewPostRoute} from 'app/router'
@@ -10,25 +10,78 @@ import {Link} from 'app/comps/link'
 import {observer} from 'mobx-react'
 import {action, reaction, observable} from 'mobx'
 
-const Background = styled.div`
+const FixedContainer = styled.div`
   position: fixed;
   z-index: 999;
   top: 0;
   left: 0;
-  bottom: 0;
   right: 0;
+  margin-bottom: 1em;
+`
+
+const MainBackground = styled.div`
+  width: 100%;
   height: 60px;
   background: rgb(245,245,245);
   border-bottom: 1px solid #ddd;
 `
 
-const ActiveArea = styled.div`
+const MainArea = styled.div`
   width: 800px;
   height: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
 `
+
+const HistoryBackground = styled.div`
+  width: 100%;
+  height: 20px;
+  background: rgb(250,250,250);
+  border-bottom: 1px solid #ddd;
+`
+
+const HistoryArea = styled.div`
+  width: 800px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  font-size: ${Sizes.s};
+`
+
+const HistoryEntry = styled.div`
+  color: ${props => props.color || 'initial'};
+  cursor: pointer;
+`
+
+@observer class History extends Comp<{}> {
+  render() {
+    const routes = uiStore.history.routes
+    const routeComps = []
+    const cursor = uiStore.history.cursor
+    const cursorEnd = uiStore.history.routes.length
+    for (let i = 0; i < cursorEnd; i++) {
+      const route = routes[i]
+      if (route == null) continue
+      const name = route.name
+      const handleClick = () => window.history.go(i - cursor)
+      if (i < cursor) {
+        routeComps.push(<HistoryEntry key={i} onClick={handleClick} >{name}</HistoryEntry>)
+      } else if (i === cursor) {
+        routeComps.push(<HistoryEntry key={i} color={Colors.primary} onClick={handleClick} >{name}</HistoryEntry>)
+      } else {
+        routeComps.push(<HistoryEntry key={i} color={Colors.greyTextLight} onClick={handleClick} >{name}</HistoryEntry>)
+      }
+      if (i < cursorEnd - 1) routeComps.push(<div key={`${i}-sep`}>&nbsp;{'>'}&nbsp;</div>)
+    }
+    return (
+      <Flex>
+        {routeComps}
+      </Flex>
+    )
+  }
+}
 
 @observer export class Topbar extends Comp<{}> {
   handleEdit = () => {
@@ -41,24 +94,31 @@ const ActiveArea = styled.div`
       || (uiStore.route.name === 'post' && uiStore.route.editing)
     const showEditButton = uiStore.route.name === 'post' && !uiStore.route.editing && uiStore.post != null
     return (
-      <Background>
-        <ActiveArea>
-          <Link route={new SearchRoute()}>
-            <Button label='Home'/>
-          </Link>
-          <HSpace key='space' v={Sizes.xs} />
-          {!showEditingActions &&
-            <Flex>
-              <Link route={new NewPostRoute()}><Button label='New Post'/></Link>
-              <HSpace v={Sizes.xs} />
-              {showEditButton && <Button primary label='Edit' onClick={this.handleEdit}/>}
-            </Flex>
-          }
-          {showEditingActions && <SavePostButtonGroup/>}
-          <Box auto/>
-          <Button label={`Logout${uiStore.me ? ' ' + uiStore.me.name : ''}`} onClick={() => uiStore.logout()}/>
-        </ActiveArea>
-      </Background>
+      <FixedContainer>
+        <MainBackground>
+          <MainArea>
+            <Link route={new SearchRoute()}>
+              <Button label='Home'/>
+            </Link>
+            <HSpace key='space' v={Sizes.xs} />
+            {!showEditingActions &&
+              <Flex>
+                <Link route={new NewPostRoute()}><Button label='New Post'/></Link>
+                <HSpace v={Sizes.xs} />
+                {showEditButton && <Button primary label='Edit' onClick={this.handleEdit}/>}
+              </Flex>
+            }
+            {showEditingActions && <SavePostButtonGroup/>}
+            <Box auto/>
+            <Button label={`Logout${uiStore.me ? ' ' + uiStore.me.name : ''}`} onClick={() => uiStore.logout()}/>
+          </MainArea>
+        </MainBackground>
+        <HistoryBackground>
+          <HistoryArea>
+            <History/>
+          </HistoryArea>
+        </HistoryBackground>
+      </FixedContainer>
     )
   }
 }

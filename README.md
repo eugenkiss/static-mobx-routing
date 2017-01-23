@@ -153,7 +153,7 @@ I am not happy with some parts of this project so I'm going to list them here.
 The main thing I really don't like is my history and scroll restoration
 implementation. It seems quite complicated and complex as well as not as
 decoupled as I think it could be. For practical uses, scroll restoration should
-be more customizable as well.
+be more customizable as well. Plus, it's kind of buggy.
 
 The `@action` annotation is not really doing what it is supposed to do. The
 reason is the transformation that TypeScript applies to async functions (see

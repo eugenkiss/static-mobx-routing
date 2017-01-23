@@ -1,13 +1,14 @@
 import {Route, jsonToRoute} from 'app/router'
 import {poll, sleep, ScrollInfo, getScrollInfo} from 'app/utils'
 import {UiStore} from 'app/store'
+import {observable} from 'mobx'
 
 // Not happy with it.
 export class History {
-  routes = new Array<Route>()
+  @observable routes = new Array<Route>()
   scrollInfos = new Array<ScrollInfo>()
-  cursor = 0
-  cursorEnd = 0
+  @observable cursor = 0
+  @observable cursorEnd = 0
   cursorNew = 0
   unhandledPopstate = false
   justLoaded = true
