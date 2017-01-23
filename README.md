@@ -60,10 +60,11 @@ propagation which, by the way, is all that I wished for after I have written my
 became much better with MobX there was still something off about the routing
 code. By chance, I read the *terrific* article [“How to Decouple State and
 UI”][mobx-article] by MobX's author Michel Weststrate which was eye-opening to
-say the least. The main point is that conventional routing code in React did not
-follow the “single source of truth approach” in that the whole UI, which routing
-is a part of, is derived from the app's state. Based on this article I even
-created a [presentation][presentation] ([slides][presentation-slides]).
+say the least. In conventional React routing code URL changes do not directly
+change app state but first lead to mounting components which then change the app
+state themselves. This goes against the paradigm of deriving the UI completely
+from the app state and has several negative consequences. Based on this article
+I even created a [presentation][presentation] ([slides][presentation-slides]).
 
 Despite the benefits of the MobX-based routing code approach presented in the
 article there were still two things that bothered me about it and that were
