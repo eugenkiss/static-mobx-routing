@@ -199,7 +199,6 @@ As mentioned already several times, the main inspiration is the article
 [“How to Decouple State and UI”][mobx-article].
 
 [MobX Router][mobx-router] is another great project which is similarly inspired
-by the aforementioned article but takes a slightly different aproach. Most
-importantly, it is not statically typed.
+by the aforementioned article but takes a slightly different aproach.
 
   [mobx-router]: https://github.com/kitze/mobx-router
