@@ -48,12 +48,12 @@ export class History {
     this.cursor += 1
     this.routes.length = this.cursor
     this.routes.push(route)
-    window.history.pushState(this.cursor, null, route.path)
+    window.history.pushState(this.cursor, null, route.pathWithParams)
   }
 
   @action replace = (route: Route) => {
     this.routes[this.cursor] = route
-    window.history.replaceState(this.cursor, null, route.path)
+    window.history.replaceState(this.cursor, null, route.pathWithParams)
   }
 
   @action goToIndex = (index: number) => {
@@ -61,5 +61,10 @@ export class History {
     if (dif === 0) return
     this.cursor = index
     window.history.go(dif)
+  }
+
+  get currentRoute(): Route {
+    if (this.routes.length === 0) return null
+    return this.routes[this.cursor]
   }
 }

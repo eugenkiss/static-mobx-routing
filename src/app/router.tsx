@@ -20,16 +20,11 @@ export function startRouter() {
   autorun(() => {
     const route = uiStore.route
     if (route.name === 'notfound') return
-    const fromRoute = null
-    const params = mapToQueryString(route.params)
-    const path = params !== ''
-      ? `${route.path}?${params}`
-      : route.path
-    const windowPath = window.location.search !== ''
+    const windowPathWithParams = window.location.search !== ''
       ? `${window.location.pathname}${window.location.search}`
       : window.location.pathname
-    if (path !== windowPath) {
-      if (fromRoute != null && uiStore.route.shouldReplace(fromRoute)) {
+    if (route.pathWithParams !== windowPathWithParams) {
+      if (uiStore.route.shouldReplace(null)) {
         uiStore.history.replace(route)
       } else {
         uiStore.history.push(route)
@@ -55,6 +50,12 @@ abstract class BaseRoute {
   protected _params = observable.map<any>()
   get params() { return this._params }
   parseParams(paramString) {}
+  get pathWithParams() {
+    const params = mapToQueryString(this.params)
+    return params !== ''
+      ? `${this.path}?${params}`
+      : this.path
+  }
   shouldReplace(fromRoute: Route) { return false }
   abstract toJson(): any
 }
@@ -113,7 +114,7 @@ export class SearchRoute extends BaseRoute {
     if (search) this.setSearch(search)
   }
 
-  shouldReplace(fromRoute: Route) { return fromRoute.name === 'search' }
+  shouldReplace(fromRoute: Route) { return uiStore.history.currentRoute.name === 'search' }
 
   go = () => SearchRoute.go(this.search)
   static go = (search?: string) => uiStore.goSearch(search)
@@ -158,7 +159,7 @@ export class PostRoute extends BaseRoute {
     super()
   }
 
-  shouldReplace(fromRoute: Route) { return fromRoute.name === 'new-post' }
+  shouldReplace(fromRoute: Route) { return uiStore.history.currentRoute.name === 'new-post' }
 
   go = () => uiStore.goPost(this.id,  this.title)
   static go = (id) => uiStore.goPost(id)
