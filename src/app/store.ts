@@ -195,7 +195,7 @@ export class UiStore {
 
   @action resetCurrentPost = () => {
     if (this.route.name === 'new-post') {
-      window.history.back()
+      this.history.back()
     } else {
       this.post.reset()
     }

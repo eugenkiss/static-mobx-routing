@@ -20,7 +20,7 @@ export class History {
   }
 
   private handlePopstate = async (e) => {
-    const savedCursor = e.status
+    const savedCursor = e.state
     if (savedCursor == null) return
     this.cursor = savedCursor
     uiStore.route = this.routes[this.cursor]
@@ -41,7 +41,7 @@ export class History {
 
   @action setInitial = (route: Route) => {
     if (this.routes.length !== 0) return
-    this.routes.push(route)
+    this.replace(route)
   }
 
   @action push = (route: Route) => {
@@ -54,6 +54,10 @@ export class History {
   @action replace = (route: Route) => {
     this.routes[this.cursor] = route
     window.history.replaceState(this.cursor, null, route.pathWithParams)
+  }
+
+  @action back = () => {
+    window.history.back()
   }
 
   @action goToIndex = (index: number) => {

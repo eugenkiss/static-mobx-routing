@@ -7,7 +7,7 @@ import {Topbar} from 'app/comps/topbar'
 
 const Wrapper = styled.div` 
   position: absolute;
-  top: 100px;
+  top: 125px;
   left: 0;
   width: 100%;
   height: 100%;
