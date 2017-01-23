@@ -73,7 +73,8 @@ const Title = styled.input`
     const post = uiStore.post
     const titlePlaceholder = uiStore.route.name === 'new-post' ? 'Post Title' : ''
     const title = post != null ? post.title : route.name === 'post' ? route.title : ''
-    const skeleton = route.name === 'post' && !route.cacheHit && uiStore.getPostRequest.pending
+    const cacheHit = route.name === 'post' && route.cacheHit // Prevent flickering
+    const skeleton = route.name === 'post' && !cacheHit && uiStore.getPostRequest.pending
     const readOnly = route.name === 'post' && !route.editing
     const showTitle = !(route.name === 'post' && !title)
     return (
@@ -93,9 +94,11 @@ const Title = styled.input`
           <VSpace v={Sizes.l}/>
           {this.renderInner()}
         </div>
-        <VelocityTransitionGroup leave={{animation: 'fadeOut', duration: 70}}>
-          {skeleton && <Skeleton initialTitle={title}/>}
-        </VelocityTransitionGroup>
+        {!cacheHit &&
+          <VelocityTransitionGroup leave={{animation: 'fadeOut', duration: 70}}>
+            {skeleton && <Skeleton initialTitle={title}/>}
+          </VelocityTransitionGroup>
+        }
       </div>
     )
   }
