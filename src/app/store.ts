@@ -29,7 +29,6 @@ export class UiStore {
 
     this.handleResize()
     window.addEventListener('resize', this.handleResize)
-    //window.addEventListener('beforeunload', this.canNavigate)
 
     this.history.restore()
     this.history.initWindowListeners()
@@ -64,28 +63,23 @@ export class UiStore {
     this.windowHeight = window.innerHeight
   }
 
-  go = (f) => {
-    f()
-    this.history.setInitial(this.route)
+  @action goRouteNotFound = () => {
+    this.route = new NotFoundRoute()
   }
 
-  @action goRouteNotFound = () => this.go(() => {
-    this.route = new NotFoundRoute()
-  })
-
-  @action goLogin = () => this.go(() => {
+  @action goLogin = () => {
     this.route = new LoginRoute()
-  })
+  }
 
-  @action goSearch = (search?: string) => this.go(async () => {
+  @action goSearch = (search?: string) => {
     const route = new SearchRoute(search)
     if (search == null) route.parseParams(window.location.search)
     this.route = route
     this.refreshPostSummaries().then()
-  })
+  }
 
   @observable getPostRequest = new RequestState('null')
-  @action goPost = (id: Id, title?: string) => this.go(async () => {
+  @action goPost = async (id: Id, title?: string) => {
     this.post = this.cachedPosts.get(id)
     const route = new PostRoute(id, title, this.post != null)
     this.route = route
@@ -115,15 +109,15 @@ export class UiStore {
       route.notFound = true
     }
     this.post = post
-  })
+  }
 
-  @action goNewPost = () => this.go(async () => {
+  @action goNewPost = () => {
     this.post = new Post({title: ''})
     this.route = new NewPostRoute()
-  })
+  }
 
   @observable loginRequest = new RequestState('null')
-  @action login = (username: string, password: string) => this.go(async () => {
+  @action login = async (username: string, password: string) => {
     const req = new RequestState()
     this.loginRequest = req
     try {
@@ -137,7 +131,7 @@ export class UiStore {
       this.goLogin()
       if (!(e instanceof ApiError)) throw e
     }
-  })
+  }
 
   @action logout = async () => {
     await this.api.logout()

@@ -11,7 +11,16 @@ import {mapToQueryString, gup} from 'app/utils'
 
 export function startRouter() {
   // update state on url change
-  new Router(routes).configure({
+  const enrichedRoutes = {}
+  for (const k of Object.keys(routes)) {
+    const go = routes[k]
+    enrichedRoutes[k] = (...args) => {
+      if (!uiStore.history.canNavigate) return
+      go(...args)
+      uiStore.history.setInitial(uiStore.route)
+    }
+  }
+  new Router(enrichedRoutes).configure({
     'notfound': () => uiStore.goRouteNotFound(),
     html5history: true
   }).init()
@@ -57,6 +66,7 @@ abstract class BaseRoute {
       : this.path
   }
   shouldReplace(fromRoute: Route) { return false }
+  canExit(event?) { return true }
   abstract toJson(): any
 }
 
@@ -126,6 +136,17 @@ routes[new SearchRoute().pathTest] = SearchRoute.go
 nameMap[new SearchRoute().name] = SearchRoute.fromJson
 
 
+function canExitFromPost(event?) {
+  if (uiStore.post == null || !uiStore.post.isDirty()) return true
+  const msg = 'Post not saved yet. Do you really want to leave?'
+  if (event != null) event.returnValue = msg
+  if (confirm(msg)) {
+    uiStore.post = null
+    return true
+  }
+  return false
+}
+
 export class NewPostRoute extends BaseRoute {
   name: 'new-post' = 'new-post'
   path = '/new'
@@ -135,6 +156,8 @@ export class NewPostRoute extends BaseRoute {
 
   go = NewPostRoute.go
   static go = () => uiStore.goNewPost()
+
+  canExit(event?) { return canExitFromPost(event) }
 
   toJson() { return { name: this.name } }
   static fromJson(o: any) { return new NewPostRoute() }
@@ -163,6 +186,8 @@ export class PostRoute extends BaseRoute {
 
   go = () => uiStore.goPost(this.id,  this.title)
   static go = (id) => uiStore.goPost(id)
+
+  canExit(event?) { return canExitFromPost(event) }
 
   toJson() { return {
     name: this.name,
