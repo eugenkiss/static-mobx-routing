@@ -166,6 +166,7 @@ export class UiStore {
     } catch (e) {
       req.fail(e.message)
       this.goLogin()
+      if (!(e instanceof ApiError)) throw e
     }
   })
 
