@@ -50,7 +50,7 @@ const SearchInput = styled.input`
 
   renderInner() {
     if (!this.initialized) {
-      if (uiStore.getPostSummariesRequest.state !== 'failed' || uiStore.postSummariesInitialized) {
+      if (uiStore.getPostSummariesRequest.status !== 'failed' || uiStore.postSummariesInitialized) {
         return <div>Loading</div>
       } else {
         return <div>Error loading posts. <Link route={this.props.route}>Retry</Link></div>

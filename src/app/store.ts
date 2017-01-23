@@ -7,9 +7,6 @@ import {History} from 'app/history'
 import {Route, SearchRoute, LoginRoute, PostRoute, NewPostRoute, NotFoundRoute} from 'app/router'
 import {RequestState} from 'app/utils'
 
-// Note: Only ever assign a new route in the goX methods so that
-// the canNavigate precondition and side-effects are always considered.
-
 export class UiStore {
   @observable windowWidth = 1
   @observable windowHeight = 1
@@ -18,7 +15,7 @@ export class UiStore {
 
   history = new History(this)
 
-  @observable route: Route = new SearchRoute()
+  @observable route: Route
   @observable me: User
 
   @observable postSummariesInitialized = false
@@ -32,15 +29,15 @@ export class UiStore {
 
     this.handleResize()
     window.addEventListener('resize', this.handleResize)
-    window.addEventListener('beforeunload', this.canNavigate)
+    //window.addEventListener('beforeunload', this.canNavigate)
 
     this.history.restore()
     this.history.initWindowListeners()
 
-    this.refreshPostSummaries().then()
     this.getMe().then()
 
     autorun(() => {
+      if (this.route == null) return
       document.title = this.route.pageTitle
     })
   }
@@ -54,8 +51,10 @@ export class UiStore {
   }
 
   private handleUnhandledExceptions = (e) => {
-    if (e.reason instanceof ApiError) {
+    const reason = e.reason
+    if (reason instanceof ApiError) {
       e.preventDefault()
+      if (reason.statusCode === 401) uiStore.goLogin()
       return
     }
   }
@@ -65,39 +64,9 @@ export class UiStore {
     this.windowHeight = window.innerHeight
   }
 
-  canNavigate = (e?) => {
-    if (this.unauthorized) return true
-    if (this.post != null && this.post.isDirty()) {
-      const msg = 'Post not saved yet. Do you really want to leave?'
-      if (e != null) e.returnValue = msg
-      if (confirm(msg)) {
-        this.post = null
-        return true
-      }
-      return false
-    }
-    return true
-  }
-
-  // TODO: Pretty intertwined with History...
   go = (f) => {
-    if (this.history.ignoreNext) {
-      this.history.ignoreNext = false
-      this.history.unhandledPopstate = false
-      return
-    }
-    if (!this.canNavigate()) {
-      // Very important for following situation: User has unsaved changes and clicks on back button.
-      // Without this, the history will be messed up (take it out and see the behavior for yourself)
-      if (this.history.unhandledPopstate) {
-        window.history.go(this.history.cursor - this.history.cursorNew)
-        this.history.unhandledPopstate = false
-        this.history.ignoreNext = true
-      }
-      return
-    }
-    this.history.handle(this.route)
     f()
+    this.history.setInitial(this.route)
   }
 
   @action goRouteNotFound = () => this.go(() => {
@@ -115,7 +84,7 @@ export class UiStore {
     this.refreshPostSummaries().then()
   })
 
-  @observable getPostRequest: RequestState
+  @observable getPostRequest = new RequestState('null')
   @action goPost = (id: Id, title?: string) => this.go(async () => {
     this.post = this.cachedPosts.get(id)
     const route = new PostRoute(id, title, this.post != null)
@@ -153,7 +122,7 @@ export class UiStore {
     this.route = new NewPostRoute()
   })
 
-  @observable loginRequest: RequestState
+  @observable loginRequest = new RequestState('null')
   @action login = (username: string, password: string) => this.go(async () => {
     const req = new RequestState()
     this.loginRequest = req
@@ -181,7 +150,7 @@ export class UiStore {
     this.me = await this.api.getMe()
   }
 
-  @observable getPostSummariesRequest: RequestState
+  @observable getPostSummariesRequest = new RequestState('null')
   @action refreshPostSummaries = async () => {
     const req = new RequestState()
     this.getPostSummariesRequest = req
@@ -207,7 +176,7 @@ export class UiStore {
     this.post = await this.api.savePost(post)
   }
 
-  @observable savePostRequest: RequestState
+  @observable savePostRequest = new RequestState('null')
   @action saveCurrentPost = async () => {
     const req = new RequestState()
     this.savePostRequest = req
@@ -234,7 +203,3 @@ export class UiStore {
 }
 
 export const uiStore = new UiStore(api)
-api.onUnauthorized = () => {
-  uiStore.unauthorized = true
-  uiStore.goLogin()
-}

@@ -9,16 +9,6 @@ import {PostComp} from 'app/comps/post'
 import {NotFound} from 'app/comps/notfound'
 import {mapToQueryString, gup} from 'app/utils'
 
-const replace = path => {
-  uiStore.history.update(uiStore.history.cursor - 1)
-  window.history.replaceState(uiStore.history.cursor, null, path)
-}
-
-const push = path => {
-  window.history.pushState(uiStore.history.cursor, null, path)
-  document.body.scrollTop = 0
-}
-
 export function startRouter() {
   // update state on url change
   new Router(routes).configure({
@@ -30,7 +20,7 @@ export function startRouter() {
   autorun(() => {
     const route = uiStore.route
     if (route.name === 'notfound') return
-    const fromRoute = uiStore.history.routes[Math.max(0, uiStore.history.cursor - 1)]
+    const fromRoute = null
     const params = mapToQueryString(route.params)
     const path = params !== ''
       ? `${route.path}?${params}`
@@ -40,9 +30,9 @@ export function startRouter() {
       : window.location.pathname
     if (path !== windowPath) {
       if (fromRoute != null && uiStore.route.shouldReplace(fromRoute)) {
-        replace(path)
+        uiStore.history.replace(route)
       } else {
-        push(path)
+        uiStore.history.push(route)
       }
     }
   })

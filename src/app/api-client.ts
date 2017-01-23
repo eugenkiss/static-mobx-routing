@@ -19,8 +19,6 @@ export class ApiError {
 
 export class ApiClient {
 
-  onUnauthorized = () => {}
-
   host = undefined as string
 
   constructor(host?: string) {
@@ -48,9 +46,6 @@ export class ApiClient {
     } catch (e) {
       console.error(`NetworkError:\n${url}\n${JSON.stringify(options)}\n${e.message}`)
       throw new ApiError(-1, 'Network Error', e.message)
-    }
-    if (response.status == 401) {
-      this.onUnauthorized()
     }
     const json: any = await response.json()
     if (json.error || !response.ok) {

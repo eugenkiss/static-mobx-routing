@@ -60,12 +60,12 @@ const HistoryEntry = styled.div`
     const routes = uiStore.history.routes
     const routeComps = []
     const cursor = uiStore.history.cursor
-    const cursorEnd = uiStore.history.routes.length
-    for (let i = 0; i < cursorEnd; i++) {
+    const end = uiStore.history.routes.length
+    for (let i = 0; i < end; i++) {
       const route = routes[i]
       if (route == null) continue
       const name = route.name
-      const handleClick = () => window.history.go(i - cursor)
+      const handleClick = () => uiStore.history.goToIndex(i)
       if (i < cursor) {
         routeComps.push(<HistoryEntry key={i} onClick={handleClick} >{name}</HistoryEntry>)
       } else if (i === cursor) {
@@ -73,7 +73,7 @@ const HistoryEntry = styled.div`
       } else {
         routeComps.push(<HistoryEntry key={i} color={Colors.greyTextLight} onClick={handleClick} >{name}</HistoryEntry>)
       }
-      if (i < cursorEnd - 1) routeComps.push(<div key={`${i}-sep`}>&nbsp;{'>'}&nbsp;</div>)
+      if (i < end - 1) routeComps.push(<div key={`${i}-sep`}>&nbsp;{'>'}&nbsp;</div>)
     }
     return (
       <Flex>
@@ -130,7 +130,7 @@ const HistoryEntry = styled.div`
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleSaveShortcut, false)
-    this.disposer = reaction(() => uiStore.savePostRequest && uiStore.savePostRequest.state, async () => {
+    this.disposer = reaction(() => uiStore.savePostRequest && uiStore.savePostRequest.status, async () => {
       const req = uiStore.savePostRequest
       if (req.pending) {
         if (uiStore.route.name === 'post') uiStore.route.editing = true

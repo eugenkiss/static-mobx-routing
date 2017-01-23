@@ -66,7 +66,7 @@ const ErrorMessage = styled.div`
   @observable buttonState = ButtonState.normal
 
   componentDidMount() {
-    this.disposer = reaction(() => uiStore.loginRequest && uiStore.loginRequest.state, async () => {
+    this.disposer = reaction(() => uiStore.loginRequest && uiStore.loginRequest.status, async () => {
       const req = uiStore.loginRequest
       if (req.pending) {
         this.buttonState = ButtonState.loading

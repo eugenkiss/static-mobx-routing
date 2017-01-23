@@ -22,51 +22,24 @@ export function sleepMin(start, minSleep) {
   })
 }
 
+type RequestStatus = 'null' | 'pending' | 'failed' | 'successful'
 export class RequestState {
   start = now()
-  @observable state: 'pending' | 'failed' | 'successful' = 'pending'
+  @observable status: RequestStatus
   error: string
+  constructor(state?: RequestStatus) {
+    this.status = state != null ? state : 'pending'
+  }
   @action succeed() {
-    this.state = 'successful'
+    this.status = 'successful'
   }
   @action fail(error: string) {
     this.error = error
-    this.state = 'failed'
+    this.status = 'failed'
   }
-  get pending() { return this.state === 'pending' }
-  get failed() { return this.state === 'failed' }
-  get successful() { return this.state === 'successful' }
-}
-
-// https://davidwalsh.name/javascript-polling
-export function poll(fn, timeout, interval) {
-    const endTime = Number(new Date()) + (timeout || 2000);
-    interval = interval || 100;
-
-    const checkCondition = function(resolve, reject) {
-        // If the condition is met, we're done!
-        const result = fn();
-        if(result) {
-            resolve(result);
-        }
-        // If the condition isn't met but the timeout hasn't elapsed, go again
-        else if (Number(new Date()) < endTime) {
-            setTimeout(checkCondition, interval, resolve, reject);
-        }
-        // Didn't match and too much time, reject!
-        else {
-            reject(new Error('timed out for ' + fn + ': ' + arguments));
-        }
-    };
-
-    return new Promise(checkCondition);
-}
-
-export type ScrollInfo = {x: number, y: number, height: number}
-
-export function getScrollInfo(): ScrollInfo {
-  const b = document.body
-  return { x: window.scrollX, y: window.scrollY, height: b.scrollHeight }
+  get pending() { return this.status === 'pending' }
+  get failed() { return this.status === 'failed' }
+  get successful() { return this.status === 'successful' }
 }
 
 // Not perfect but good enough
