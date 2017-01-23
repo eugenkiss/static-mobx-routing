@@ -148,12 +148,15 @@ If you see something that can be improved, please let me know (GitHub Issue)!
 Open Problems
 -------------
 
-I am not happy with some parts of this project so I'm going to list them here.
+It should be possible to make a library out of this project. I'm in the process
+of doing that.
 
-The main thing I really don't like is my history and scroll restoration
-implementation. It seems quite complicated and complex as well as not as
-decoupled as I think it could be. For practical uses, scroll restoration should
-be more customizable as well. Plus, it's kind of buggy.
+I came to the conclusion that (re)storing scroll positions and other transient 
+or component-specific UI state should be the responsibility of the respective
+React component. In Android there were specific lifecycle methods to achieve
+that. The idea is to save e.g. the scroll position of the component to the
+current history entry and restore it if the user goes back to that history
+entry. However, arriving at a good implementation seems not easy so far.
 
 The `@action` annotation is not really doing what it is supposed to do. The
 reason is the transformation that TypeScript applies to async functions (see
@@ -168,13 +171,12 @@ version of Retrofit would benefit the community I think.
 
 Some other questions in my mind are:
 
-- Has the `go` or rather screen transition prevention approach I use in `store.tsx`
-  any downsides?
 - Has the approach to state transitions of buttons depending on requests states downsides?
 - Is there a better approach here to handle caching and race conditions? Has
   this `RequestState` approach downsides. MobX-Utils's `fromPromise` could be used
-  as well and could also be used to handle race conditions. Would it be better (I
-  did not really try as I think it would not)?
+  as well and could also be used to handle race conditions. But it seems to be more limited.
+  For example, if I want to handle the case of a cache-hit and still want to load
+  data.
 - What are arguments for using MobX-Utils's `createViewModel` for `Post` instead
   of the current approach?
 - Should MobX provide debounced computed properties (see `search.tsx`)?
@@ -182,12 +184,6 @@ Some other questions in my mind are:
 
 Misc
 ----
-
-Why is this project not a library? The short answer is that if I knew how to
-make a library out of it then I would have. Nonetheless, I think the pattern is
-the important thing here and it can be specialized for your app. As routing is
-often such an integral part of apps it seems justifiable to take full control
-over it.
 
 The generated text is inspired by [“Escape from New York”](http://www.imdb.com/title/tt0082340/) ;).
 
