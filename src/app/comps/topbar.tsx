@@ -64,15 +64,12 @@ const HistoryEntry = styled.div`
     for (let i = 0; i < end; i++) {
       const route = routes[i]
       if (route == null) continue
-      const name = route.name
-      const handleClick = () => uiStore.history.goToIndex(i)
-      if (i < cursor) {
-        routeComps.push(<HistoryEntry key={i} onClick={handleClick} >{name}</HistoryEntry>)
-      } else if (i === cursor) {
-        routeComps.push(<HistoryEntry key={i} color={Colors.primary} onClick={handleClick} >{name}</HistoryEntry>)
-      } else {
-        routeComps.push(<HistoryEntry key={i} color={Colors.greyTextLight} onClick={handleClick} >{name}</HistoryEntry>)
-      }
+      const color = i < cursor ? null : i === cursor ? Colors.primary : Colors.greyTextLight
+      routeComps.push(
+        <HistoryEntry key={i} color={color} onClick={() => uiStore.history.goToIndex(i)}>
+          {route.name}
+        </HistoryEntry>
+      )
       if (i < end - 1) routeComps.push(<div key={`${i}-sep`}>&nbsp;{'>'}&nbsp;</div>)
     }
     return (
