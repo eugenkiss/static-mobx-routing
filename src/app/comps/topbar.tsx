@@ -80,6 +80,16 @@ const HistoryEntry = styled.div`
   }
 }
 
+@observer class CurrentHistoryEntry extends Comp<{}> {
+  render() {
+    return (
+      <div>
+        {JSON.stringify(uiStore.history.currentRoute.toJson(), null, 2)}
+      </div>
+    )
+  }
+}
+
 @observer export class Topbar extends Comp<{}> {
   handleEdit = () => {
     if (uiStore.route.name !== 'post') return
@@ -113,6 +123,11 @@ const HistoryEntry = styled.div`
         <HistoryBackground>
           <HistoryArea>
             <History/>
+          </HistoryArea>
+        </HistoryBackground>
+        <HistoryBackground>
+          <HistoryArea>
+            <CurrentHistoryEntry/>
           </HistoryArea>
         </HistoryBackground>
       </FixedContainer>
