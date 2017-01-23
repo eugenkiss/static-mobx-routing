@@ -90,13 +90,13 @@ export class UiStore {
       post = await this.api.getPost(id)
       req.succeed()
       this.cachedPosts.set(id, post)
-      if (this.getPostRequest.start > req.start) {
+      if (this.getPostRequest.start > req.start || route !== this.route) {
         console.log('Race condition prevented')
         return
       }
     } catch (e) {
       req.fail(e.message)
-      if (this.getPostRequest.start > req.start) {
+      if (this.getPostRequest.start > req.start || route !== this.route) {
         console.log('Race condition prevented')
         return
       }
