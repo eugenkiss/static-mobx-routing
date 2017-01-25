@@ -3,7 +3,7 @@ import {Route, jsonToRoute} from 'app/router'
 import {UiStore, uiStore} from 'app/store'
 
 export class History {
-  @observable routes = new Array<Route>()
+  @observable routes = observable.array<Route>()
   @observable cursor = 0
 
   constructor(private store: UiStore) {}
