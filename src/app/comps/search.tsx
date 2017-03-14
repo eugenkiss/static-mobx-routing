@@ -31,6 +31,7 @@ const SearchInput = styled.input`
       this.filtered = this.filter(uiStore.postSummaries)
       this.initialized = uiStore.postSummariesInitialized
     }, 150)
+    document.body.scrollTop = 0 // No scroll restoration for now
   }
 
   componentWillUnmount() {

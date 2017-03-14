@@ -4,7 +4,7 @@ import {VelocityTransitionGroup} from 'velocity-react'
 import {Comp} from 'app/utils'
 import {Colors, Sizes, FontWeights} from 'app/styles'
 import {uiStore} from 'app/store'
-import {autorun} from 'mobx'
+import {autorun, computed} from 'mobx'
 import {PostRoute, NewPostRoute} from 'app/router'
 import styled from 'styled-components'
 import {injectGlobal} from 'styled-components'
@@ -25,17 +25,49 @@ const Title = styled.input`
 }> {
   titleRef = null
   editorRef = null
-  disposer = null
+  autorunFocus = null
+  autorunRestoreUiState = null
+  lastPostId = null
+  saveUiStateListener = null
+
+  @computed get dataState(): 'normal' | 'loading' | 'loadingWithCacheHit' | 'error' | 'notfound' {
+    const route = this.props.route
+    if (route.name === 'post') {
+      if (route.notFound) return 'notfound'
+      if (!route.cacheHit && uiStore.getPostRequest.failed) return 'error'
+      if (route.cacheHit && uiStore.getPostRequest.pending) return 'loadingWithCacheHit'
+      if (uiStore.getPostRequest.pending || uiStore.post == null) return 'loading'
+    }
+    return 'normal'
+  }
 
   componentDidMount() {
-    this.disposer = autorun(() => {
+    this.autorunFocus = autorun(() => {
       if (uiStore.route.name === 'new-post' && this.titleRef != null) this.titleRef.focus()
       if (uiStore.route.name === 'post' && this.editorRef != null) this.editorRef.blur()
+    })
+    this.saveUiStateListener = uiStore.history.addSaveUiStateListener(route => {
+      if (route.name !== 'post') return
+      console.log('store scroll position', document.body.scrollTop)
+      return { name: 'PostComp', data: { scrollY: document.body.scrollTop }}
+    })
+
+    this.autorunRestoreUiState = autorun(() => {
+      if ((this.dataState === 'normal' || this.dataState === 'loadingWithCacheHit') && this.lastPostId !== uiStore.post.id) {
+        this.lastPostId = uiStore.post.id
+        if (uiStore.history.uiState == null || uiStore.history.uiState['PostComp'] == null) return
+        const y = uiStore.history.uiState['PostComp'].scrollY
+        console.log('restore scroll position', y)
+        // TODO: Why is delay needed? And why is scroll position not restored exactly when at the very bottom?
+        requestAnimationFrame(() => document.body.scrollTop = y)
+      }
     })
   }
 
   componentWillUnmount() {
-    this.disposer()
+    this.autorunFocus()
+    this.autorunRestoreUiState()
+    uiStore.history.removeSaveUiStateListener(this.saveUiStateListener)
   }
 
   handleTitleKeyDown = (e) => {
@@ -46,15 +78,15 @@ const Title = styled.input`
   }
 
   renderInner() {
+    const route = this.props.route
     const post = uiStore.post
     const contentPlaceholder = uiStore.route.name === 'new-post' ? 'Add content' : ''
     const content = post && post.text ? post.text : ''
-    const route = this.props.route
-    if (route.name === 'post' && route.notFound) {
+    if (this.dataState === 'notfound') {
       return <div>Post not found</div>
     }
-    if (route.name === 'post' && !route.cacheHit && uiStore.getPostRequest.failed) {
-      return <div>Error getting post. <Link route={this.props.route}>Retry</Link></div>
+    if (this.dataState === 'error') {
+      return <div>Error getting post. <Link route={route}>Retry</Link></div>
     }
     const readOnly = route.name === 'post' && !route.editing
     return (
@@ -74,7 +106,7 @@ const Title = styled.input`
     const titlePlaceholder = uiStore.route.name === 'new-post' ? 'Post Title' : ''
     const title = post != null ? post.title : route.name === 'post' ? route.title : ''
     const cacheHit = route.name === 'post' && route.cacheHit // Prevent flickering
-    const skeleton = route.name === 'post' && !cacheHit && uiStore.getPostRequest.pending
+    const skeleton = this.dataState === 'loading'
     const readOnly = route.name === 'post' && !route.editing
     const showTitle = !(route.name === 'post' && !title)
     return (
