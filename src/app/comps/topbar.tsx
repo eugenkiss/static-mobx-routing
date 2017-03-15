@@ -141,7 +141,7 @@ const HistoryEntry = styled.div`
   disposer = null
 
   componentDidMount() {
-    document.addEventListener("keydown", this.handleSaveShortcut, false)
+    document.addEventListener('keydown', this.handleSaveShortcut, false)
     this.disposer = reaction(() => uiStore.savePostRequest && uiStore.savePostRequest.status, async () => {
       const req = uiStore.savePostRequest
       if (req.pending) {

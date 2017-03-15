@@ -30,6 +30,8 @@ const Title = styled.input`
   lastPostId = null
   saveUiStateListener = null
 
+  @computed get readOnly() { return this.props.route.name === 'post' && !uiStore.route.editing }
+
   @computed get dataState(): 'normal' | 'loading' | 'loadingWithCacheHit' | 'error' | 'notfound' {
     const route = this.props.route
     if (route.name === 'post') {
@@ -88,11 +90,10 @@ const Title = styled.input`
     if (this.dataState === 'error') {
       return <div>Error getting post. <Link route={route}>Retry</Link></div>
     }
-    const readOnly = route.name === 'post' && !route.editing
     return (
       <Textarea
         innerRef={r => this.editorRef = r}
-        readOnly={readOnly}
+        readOnly={this.readOnly}
         placeholder={contentPlaceholder}
         value={content}
         onChange={(e: any) => post.text = e.target.value}
@@ -107,7 +108,6 @@ const Title = styled.input`
     const title = post != null ? post.title : route.name === 'post' ? route.title : ''
     const cacheHit = route.name === 'post' && route.cacheHit // Prevent flickering
     const skeleton = this.dataState === 'loading'
-    const readOnly = route.name === 'post' && !route.editing
     const showTitle = !(route.name === 'post' && !title)
     return (
       <div style={{ position: 'relative', width: '100%'}}> { /* A pity it seems hard to create a StackLayout */ }
@@ -117,7 +117,7 @@ const Title = styled.input`
               innerRef={r => this.titleRef = r}
               type='text'
               value={title}
-              readOnly={readOnly}
+              readOnly={this.readOnly}
               placeholder={titlePlaceholder}
               onChange={(e: any) => post.title = e.target.value}
               onKeyDown={this.handleTitleKeyDown}
