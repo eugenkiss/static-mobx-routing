@@ -70,7 +70,7 @@ export class History {
       return
     }
     if (savedCursor == null) return
-    //this.callStoreListeners(this.currentRoute) // TODO: When clicking forward arrow, no store!
+    this.callSaveUiStateListeners(this.currentRoute)
     this.cursor = savedCursor
     uiStore.route = this.routes[this.cursor]
   }
@@ -116,7 +116,6 @@ export class History {
 
   @action back = () => {
     if (!this.canExitCurrentRoute()) return
-    this.callSaveUiStateListeners(this.currentRoute)
     window.history.back()
   }
 
@@ -124,7 +123,6 @@ export class History {
     if (!this.canExitCurrentRoute()) return
     const dif = index - this.cursor
     if (dif === 0) return
-    this.callSaveUiStateListeners(this.currentRoute)
     this.cursor = index
     window.history.go(dif)
   }
