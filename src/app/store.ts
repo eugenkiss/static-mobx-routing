@@ -96,18 +96,16 @@ export class UiStore {
       }
     } catch (e) {
       req.fail(e.message)
+      route.error = true
       if (this.getPostRequest.start > req.start || route !== this.route) {
         console.log('Race condition prevented')
         return
       }
       if (!(e instanceof ApiError)) throw e
       if (e.statusCode !== 404) throw e
-    }
-    if (post) {
-      route.title = post.title
-    } else {
       route.notFound = true
     }
+    if (post) route.title = post.title
     this.post = post
   }
 

@@ -174,9 +174,14 @@ export class PostRoute extends BaseRoute {
   name: 'post' = 'post'
   get path() { return `/posts/${this.id}` }
   pathTest = '/posts/:id'
-  @computed get pageTitle() { return uiStore.post != null ? uiStore.post.title : 'Post error' }
+  @computed get pageTitle() {
+    return (uiStore.post && uiStore.post.title) || this.title ||
+      this.notFound && `Not Found Post ${this.id}` || this.error && `Error Loading Post ${this.id}` ||
+      `Loading Post ${this.id}`
+  }
   comp = <PostComp route={this}/>
 
+  @observable error = false
   @observable notFound = false // TODO: Should rather be part of request object
   @observable editing = false
   constructor(
