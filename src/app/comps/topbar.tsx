@@ -84,7 +84,7 @@ const HistoryEntry = styled.div`
   render() {
     return (
       <div>
-        {JSON.stringify(uiStore.route.toJson(), null, 2)}
+        {JSON.stringify(uiStore.route.toJson(), null, 2)} {JSON.stringify(uiStore.history.uiState, null, 2)}
       </div>
     )
   }

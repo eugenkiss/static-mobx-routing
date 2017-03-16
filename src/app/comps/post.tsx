@@ -23,6 +23,7 @@ const Title = styled.input`
 @observer export class PostComp extends Comp<{
   route: PostRoute | NewPostRoute
 }> {
+  static id = 'PostComp'
   titleRef = null
   editorRef = null
   autorunFocus = null
@@ -51,14 +52,14 @@ const Title = styled.input`
     this.saveUiStateListener = uiStore.history.addSaveUiStateListener(route => {
       if (route.name !== 'post') return
       console.log('store scroll position', document.body.scrollTop)
-      return { name: 'PostComp', data: { scrollY: document.body.scrollTop }}
+      return { name: PostComp.id, data: { scrollY: document.body.scrollTop }}
     })
 
     this.autorunRestoreUiState = autorun(() => {
       if ((this.dataState === 'normal' || this.dataState === 'loadingWithCacheHit') && this.lastPostId !== uiStore.post.id) {
         this.lastPostId = uiStore.post.id
-        if (uiStore.history.uiState == null || uiStore.history.uiState['PostComp'] == null) return
-        const y = uiStore.history.uiState['PostComp'].scrollY
+        if (uiStore.history.uiState == null || uiStore.history.uiState[PostComp.id] == null) return
+        const y = uiStore.history.uiState[PostComp.id].scrollY
         console.log('restore scroll position', y)
         // TODO: Why is delay needed? And why is scroll position not restored exactly when at the very bottom?
         requestAnimationFrame(() => document.body.scrollTop = y)
