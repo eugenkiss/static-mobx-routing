@@ -30,7 +30,7 @@ const Title = styled.input`
   lastPostId = null
   saveUiStateListener = null
 
-  @computed get readOnly() { return this.props.route.name === 'post' && !uiStore.route.editing }
+  @computed get readOnly() { return this.props.route.name === 'post' && !this.props.route.editing }
 
   @computed get dataState(): 'normal' | 'loading' | 'loadingWithCacheHit' | 'error' | 'notfound' {
     const route = this.props.route
