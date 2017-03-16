@@ -1,4 +1,4 @@
-import {observable, action, computed} from 'mobx'
+import {observable, action, computed, runInAction} from 'mobx'
 import {Route, jsonToRoute} from 'app/router'
 import {UiStore, uiStore} from 'app/store'
 
@@ -70,9 +70,11 @@ export class History {
       return
     }
     if (savedCursor == null) return
-    this.callSaveUiStateListeners(this.currentRoute)
-    this.cursor = savedCursor
-    uiStore.route = this.routes[this.cursor]
+    runInAction(() => {
+      this.callSaveUiStateListeners(this.currentRoute)
+      this.cursor = savedCursor
+      uiStore.route = this.routes[this.cursor]
+    })
   }
 
   get canNavigate() { return !this.preventNavigationTemporarily }
@@ -123,7 +125,6 @@ export class History {
     if (!this.canExitCurrentRoute()) return
     const dif = index - this.cursor
     if (dif === 0) return
-    this.cursor = index
     window.history.go(dif)
   }
 
