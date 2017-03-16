@@ -56,8 +56,9 @@ const Title = styled.input`
     })
 
     this.autorunRestoreUiState = autorun(() => {
-      if ((this.dataState === 'normal' || this.dataState === 'loadingWithCacheHit') && this.lastPostId !== uiStore.post.id) {
-        this.lastPostId = uiStore.post.id
+      const id = uiStore.post && uiStore.post.id
+      if ((this.dataState === 'normal' || this.dataState === 'loadingWithCacheHit') && this.lastPostId !== id) {
+        this.lastPostId = id
         if (uiStore.history.uiState == null || uiStore.history.uiState[PostComp.id] == null) return
         const y = uiStore.history.uiState[PostComp.id].scrollY
         console.log('restore scroll position', y)
