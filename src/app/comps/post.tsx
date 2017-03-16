@@ -130,7 +130,7 @@ const Title = styled.input`
         </div>
         {!cacheHit &&
           <VelocityTransitionGroup leave={{animation: 'fadeOut', duration: 70}}>
-            {skeleton && <Skeleton initialTitle={title}/>}
+            {skeleton && <Skeleton title={title}/>}
           </VelocityTransitionGroup>
         }
       </div>
@@ -139,17 +139,11 @@ const Title = styled.input`
 }
 
 class Skeleton extends Comp<{
-  initialTitle: string
-}> {
   title: string
-
-  constructor(props) {
-    super(props)
-    this.title = props.initialTitle
-  }
+}> {
 
   render() {
-    const title = this.title
+    const title = this.props.title
     const lines = []
     const len = uiStore.windowHeight / 45
     for (let i = 0; i < len; i++) {

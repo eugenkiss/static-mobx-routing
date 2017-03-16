@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "start": "node fuse dev",
+    "start": "webpack-dev-server --progress --port 5001",
+    "start2": "node fuse dev",
     "build": "rm -rf ./build && NODE_ENV=production ENV=dev webpack --progress --profile && cp ./build/index.html ./build/200.html"
   },
   "devDependencies": {
