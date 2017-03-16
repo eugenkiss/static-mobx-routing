@@ -156,7 +156,7 @@ or component-specific UI state should be the responsibility of the respective
 React component. In Android there were specific lifecycle methods to achieve
 that. The idea is to save e.g. the scroll position of the component to the
 current history entry and restore it if the user goes back to that history
-entry. However, arriving at a good implementation seems not easy so far.
+entry. I've created an exemplary implementation.
 
 The `@action` annotation is not really doing what it is supposed to do. The
 reason is the transformation that TypeScript applies to async functions (see
@@ -167,7 +167,7 @@ TypeScript would be great. Afaik, TypeScript will soon allow such plugins.
 In Android and Java land there is [Retrofit](https://square.github.io/retrofit/)
 which I find to be a very good HTTP client library. In this project I essentially
 created my own ad-hoc one based on `fetch`. It works fine, however a TypeScript
-version of Retrofit would benefit the community I think.
+version of Retrofit would be useful I think.
 
 Some other questions in my mind are:
 
@@ -176,10 +176,18 @@ Some other questions in my mind are:
   this `RequestState` approach downsides. MobX-Utils's `fromPromise` could be used
   as well and could also be used to handle race conditions. But it seems to be more limited.
   For example, if I want to handle the case of a cache-hit and still want to load
-  data.
+  data (i.e. show cached text but indicate with a loading animation that fresh data
+  still needs to be fetched).
 - What are arguments for using MobX-Utils's `createViewModel` for `Post` instead
   of the current approach?
 - Should MobX provide debounced computed properties (see `search.tsx`)?
+
+Another very annoying problem is the following situation. Let's say you navigate to
+a post `/posts/0`. Then you manually change the path in the url bar to `/posts/1`.
+If you press the back button now (to get back to `/posts/0`) the history cursor is not 
+updated because the `popstate` event is not fired. Instead, it seems the browser
+completely reloads the page. I tried very hard to find a solution but I don't know
+what to do about it.
 
 
 Misc

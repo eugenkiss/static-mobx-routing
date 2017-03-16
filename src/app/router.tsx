@@ -16,12 +16,14 @@ export function startRouter() {
     const go = routes[k]
     enrichedRoutes[k] = (...args) => {
       if (!uiStore.history.canNavigate) return
-      if (uiStore.history.cursor < uiStore.history.routes.length) {
+      if (uiStore.route == null) {
+        go(...args)
+        uiStore.history.setInitial(uiStore.route)
+      } else if (uiStore.history.cursor < uiStore.history.routes.length - 1) {
         uiStore.history.routes[uiStore.history.cursor].go()
       } else {
         go(...args)
       }
-      uiStore.history.setInitial(uiStore.route)
     }
   }
   new Router(enrichedRoutes).configure({

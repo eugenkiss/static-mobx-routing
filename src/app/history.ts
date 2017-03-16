@@ -97,7 +97,13 @@ export class History {
   }
 
   @action setInitial = (route: Route) => {
-    if (this.routes.length !== 0) return
+    if (window.history.state == null && this.routes.length > 0) {
+      // For the case that user does not simply refresh the page, but changes the url -> cut history
+      // TODO: However, history navigation is broken after that, i.e. popstate is not called when clicking back button
+      // and the restored cursors will be wrong... See README
+      this.cursor++
+      this.routes.length = this.cursor + 1
+    }
     this.replace(route)
   }
 
@@ -118,6 +124,7 @@ export class History {
 
   @action back = () => {
     if (!this.canExitCurrentRoute()) return
+    this.cursor--
     window.history.back()
   }
 
@@ -125,6 +132,7 @@ export class History {
     if (!this.canExitCurrentRoute()) return
     const dif = index - this.cursor
     if (dif === 0) return
+    this.cursor = this.cursor + dif
     window.history.go(dif)
   }
 
