@@ -132,6 +132,7 @@ export class History {
     if (!this.canExitCurrentRoute()) return
     const dif = index - this.cursor
     if (dif === 0) return
+    this.callSaveUiStateListeners(this.currentRoute)
     this.cursor = this.cursor + dif
     window.history.go(dif)
   }
