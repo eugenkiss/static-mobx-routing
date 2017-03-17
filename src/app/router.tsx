@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {observable, autorun, computed, action} from 'mobx'
+import {serializable, serialize, deserialize} from 'serializr'
 import {Router} from 'director/build/director'
 import {Id} from 'app/models/id'
 import {uiStore} from 'app/store'
@@ -172,7 +173,7 @@ nameMap[new NewPostRoute().name] = NewPostRoute.fromJson
 
 
 export class PostRoute extends BaseRoute {
-  name: 'post' = 'post'
+  @serializable name: 'post' = 'post'
   get path() { return `/posts/${this.id}` }
   pathTest = '/posts/:id'
   @computed get pageTitle() {
@@ -182,34 +183,29 @@ export class PostRoute extends BaseRoute {
   }
   comp = <PostComp route={this}/>
 
+  @serializable id: Id
+  @serializable title: string
+  @serializable cacheHit: boolean
+  @observable @serializable editing = false
   @observable error = false
-  @observable notFound = false // TODO: Should rather be part of request object
-  @observable editing = false
-  constructor(
-    public id: Id,
-    public title?: string,
-    public cacheHit?: boolean) {
+  @observable notFound = false // TODO: Should maybe rather be part of request object?
+  constructor(id: Id, title?: string, cacheHit?: boolean, editing?: boolean) {
     super()
+    this.id = id
+    this.title = title
+    this.cacheHit = cacheHit
+    this.editing = editing
   }
 
   shouldReplace(fromRoute: Route) { return uiStore.history.currentRoute.name === 'new-post' }
 
-  go = () => uiStore.goPost(this.id,  this.title)
+  go = () => uiStore.goPost(this.id,  this.title, this.editing)
   static go = (id) => uiStore.goPost(id)
 
   canExit(event?) { return canExitFromPost(event) }
 
-  toJson() { return {
-    name: this.name,
-    id: this.id,
-    title: this.title,
-    editing: this.editing
-  } }
-  static fromJson(o: any) {
-    const s = new PostRoute(o.id, o.title)
-    s.editing = o.editing
-    return s
-  }
+  toJson() { return serialize(this) }
+  static fromJson(o: any) { return deserialize(PostRoute, o) }
 }
 routes[new PostRoute(null).pathTest] = PostRoute.go
 nameMap[new PostRoute(null).name] = PostRoute.fromJson

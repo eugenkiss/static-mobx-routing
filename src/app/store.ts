@@ -79,9 +79,9 @@ export class UiStore {
   }
 
   @observable getPostRequest = new RequestState('null')
-  @action goPost = async (id: Id, title?: string) => {
+  @action goPost = async (id: Id, title?: string, editing?: boolean) => {
     this.post = this.cachedPosts.get(id)
-    const route = new PostRoute(id, title, this.post != null)
+    const route = new PostRoute(id, title, this.post != null, editing)
     this.route = route
     let post = null
     const req = new RequestState()
