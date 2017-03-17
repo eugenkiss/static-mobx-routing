@@ -5,11 +5,11 @@ import {UiStore, uiStore} from 'app/store'
 type SaveUiStateListener = (route: Route) => { name: string, data: any } | null
 
 export class History {
-  uiStates: any = {}
-  @observable routes = observable.array<Route>()
   @observable cursor = 0
-  saveUiStateListeners = new Array<SaveUiStateListener>()
+  uiStates: any = {}
   @computed get uiState() { return this.uiStates[this.cursor] }
+  saveUiStateListeners = new Array<SaveUiStateListener>()
+  @observable routes = observable.array<Route>() // Only necessary to visualize history
   popstated = false
 
   constructor(private store: UiStore) {}
@@ -76,7 +76,7 @@ export class History {
     runInAction(() => {
       this.callSaveUiStateListeners(this.currentRoute)
       this.cursor = savedCursor
-      uiStore.route = this.routes[this.cursor]
+      //uiStore.route = this.routes[this.cursor]
     })
   }
 
@@ -92,18 +92,18 @@ export class History {
   restore = () => {
     const routesJson = sessionStorage.getItem('routes')
     const historyCurJson = sessionStorage.getItem('historyCur')
-    const uiStates = sessionStorage.getItem('uiStates')
-    if (routesJson == null || historyCurJson == null || uiStates == null) return
+    const uiStatesJson = sessionStorage.getItem('uiStates')
+    if (routesJson == null || historyCurJson == null || uiStatesJson == null) return
     this.routes = JSON.parse(routesJson).map(o => o == null ? null : jsonToRoute(o))
     this.cursor = JSON.parse(historyCurJson)
-    this.uiStates = JSON.parse(uiStates)
+    this.uiStates = JSON.parse(uiStatesJson)
   }
 
   @action setInitial = (route: Route) => {
     if (window.history.state == null && this.routes.length > 0) {
       // For the case that user does not simply refresh the page, but changes the url -> cut history
-      // TODO: However, history navigation is broken after that, i.e. popstate is not called when clicking back button
-      // and the restored cursors will be wrong... See README
+      // TODO: However, ui state restoration and history visualization is broken after that as popstate
+      // is not called when clicking back button and the restored cursor will be wrong... See README
       this.cursor++
       this.routes.length = this.cursor + 1
     }
