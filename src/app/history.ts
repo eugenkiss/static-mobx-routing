@@ -10,6 +10,7 @@ export class History {
   @observable cursor = 0
   saveUiStateListeners = new Array<SaveUiStateListener>()
   @computed get uiState() { return this.uiStates[this.cursor] }
+  popstated = false
 
   constructor(private store: UiStore) {}
 
@@ -33,6 +34,7 @@ export class History {
 
   initWindowListeners = () => {
     if ('scrollRestoration' in history) { history.scrollRestoration = 'manual' }
+    window.addEventListener('load', () => this.popstated = false)
     window.addEventListener('popstate', this.handlePopstate)
     window.addEventListener('unload', this.handleUnload)
     window.addEventListener('beforeunload', this.canExitCurrentRoute)
@@ -45,7 +47,7 @@ export class History {
   }
 
   private handleUnload = () => {
-    this.routes[this.cursor] = this.store.route
+    //this.routes[this.cursor] = this.store.route // Leads to unwanted side effects but might be necessary for some situations...
     this.persist()
   }
 
@@ -70,6 +72,7 @@ export class History {
       return
     }
     if (savedCursor == null) return
+    this.popstated = true
     runInAction(() => {
       this.callSaveUiStateListeners(this.currentRoute)
       this.cursor = savedCursor
