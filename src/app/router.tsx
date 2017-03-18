@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {observable, autorun, computed, action} from 'mobx'
+import {observable, computed, action, reaction} from 'mobx'
 import {serializable, serialize, deserialize} from 'serializr'
 import {Router} from 'director/build/director'
 import {Id} from 'app/models/id'
@@ -18,6 +18,7 @@ export function startRouter() {
     enrichedRoutes[k] = (...args) => {
       if (!uiStore.history.canNavigate) return
       const uninitialized = uiStore.route == null
+      uiStore.history.callSaveUiStateListeners(uiStore.history.currentRoute, 'temp')
       go(...args)
       if (uninitialized) uiStore.history.setInitial(uiStore.route)
     }
@@ -28,7 +29,7 @@ export function startRouter() {
   }).init()
 
   // update url on state changes
-  autorun(() => {
+  reaction(() => uiStore.route, () => {
     const route = uiStore.route
     if (route.name === 'notfound') return
     const windowPathWithParams = window.location.search !== ''

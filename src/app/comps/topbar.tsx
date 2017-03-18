@@ -3,7 +3,7 @@ import {Comp, sleep, sleepMin} from 'app/utils'
 import {Sizes, Colors} from 'app/styles'
 import styled from 'styled-components'
 import {uiStore} from 'app/store'
-import {SearchRoute, NewPostRoute} from 'app/router'
+import {SearchRoute, NewPostRoute, PostRoute} from 'app/router'
 import {Button, ButtonState} from 'app/comps/button'
 import {HSpace, Flex, Box} from 'app/comps/basic'
 import {Link} from 'app/comps/link'
@@ -107,6 +107,11 @@ const HistoryEntry = styled.div`
             <Link route={new SearchRoute()}>
               <Button label='Home'/>
             </Link>
+            {uiStore.route.name === 'post' &&
+              <Link route={new PostRoute(''+(Number(uiStore.route.id)+1))}>
+                <Button label='Next'/>
+              </Link>
+            }
             <HSpace key='space' v={Sizes.xs} />
             {!showEditingActions &&
               <Flex>

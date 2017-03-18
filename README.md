@@ -8,7 +8,7 @@ scenarious can be examined. Play with the [live instance][live-instance].
 
 Note, I do not claim that this approach is perfect. I am very much open to
 suggestions and discussions—one of the main reasons I created it in the first
-place. Nonetheless, I have been quite happy with this approach so far.
+place. Nonetheless, I have been happy with this approach so far.
 
   [live-instance]: http://static-mobx-routing.surge.sh
 
@@ -21,8 +21,8 @@ Simply run `npm install` and later `npm start`. For yarn it's `yarn install` and
 
 Even though this projects mimics a client-side app that communicates with a
 remote backend, there is no need run a local server. The reason is that this
-project contains an embedded mock server implementation. State is not persisted
-across reloads of the app.
+project contains an embedded mock server implementation. Application state is 
+not persisted across reloads of the app.
 
 
 Advantages
@@ -34,7 +34,6 @@ The following are the advantages of this routing and project structuring approac
 - UI is *completely* derived from state
     - More control over routing and its interaction with other state (such as caches)
     - Simpler data flow (e.g. app state changes transparently lead to route changes)
-- No need for third-party routing library
 
 Please read [“How to Decouple State and UI”][mobx-article] for background
 information.
@@ -131,6 +130,15 @@ The most relevant files with respect to routing code are `store.tsx`, `router.ts
 For simplicity (and for other reasons) I do not employ dependency injection for the
 store and other things.
 
+I came to the conclusion that (re)storing scroll positions and other soft or 
+component-specific UI state should be the responsibility of the respective
+React component. As the component knows best when to restore UI state, e.g. 
+after asynchronous loading has finished, it feels natural to let it take the
+responsibility. In Android there are specific lifecycle methods to achieve
+that. The idea is to save, e.g., the scroll position of the component to the
+current history entry with a unique id and to restore it if the user goes back 
+to that history entry.
+
 A shoutout to the following great (but arguably lesser known) projects that I
 used to great effect in this one:
 
@@ -150,13 +158,6 @@ Open Problems
 
 It should be possible to make a library out of this project. I'm in the process
 of doing that.
-
-I came to the conclusion that (re)storing scroll positions and other transient 
-or component-specific UI state should be the responsibility of the respective
-React component. In Android there were specific lifecycle methods to achieve
-that. The idea is to save e.g. the scroll position of the component to the
-current history entry and restore it if the user goes back to that history
-entry. I've created an exemplary implementation.
 
 The `@action` annotation is not really doing what it is supposed to do. The
 reason is the transformation that TypeScript applies to async functions (see
@@ -188,6 +189,14 @@ If you press the back button now (to get back to `/posts/0`) the history cursor 
 updated because the `popstate` event is not fired. Instead, it seems the browser
 completely reloads the page. I tried very hard to find a solution but I don't know
 what to do about it.
+
+In general, the fact that you cannot ask the browser for the current history index
+is irritatingly limiting. See also [this video](https://youtu.be/Mf0Fy8iHp8k?t=6m26s)
+by React Router's creators mentioning the problem. For this reason, UI states for a 
+history entry are saved per URL. The implication is that if you have two entries in
+the history with the same URL they will share the same UI states. I think this is
+a fair compromise in practice. Still, the implementation is not pretty mainly because
+there is no hook to get the URL before it is changed.
 
 
 Misc

@@ -13,7 +13,7 @@ export class UiStore {
 
   @observable unauthorized = false
 
-  history = new History(this)
+  history = new History()
 
   @observable route: Route
   @observable me: User

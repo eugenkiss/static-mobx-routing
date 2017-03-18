@@ -50,17 +50,19 @@ const Title = styled.input`
       if (uiStore.route.name === 'post' && this.editorRef != null) this.editorRef.blur()
     })
     this.saveUiStateListener = uiStore.history.addSaveUiStateListener(route => {
-      if (route.name !== 'post') return
       console.log('store scroll position', document.body.scrollTop)
-      return { name: PostComp.id, data: { scrollY: document.body.scrollTop }}
+      return { id: PostComp.id, data: { scrollY: document.body.scrollTop }}
     })
-
     this.autorunRestoreUiState = autorun(() => {
       const id = uiStore.post && uiStore.post.id
       if ((this.dataState === 'normal' || this.dataState === 'loadingWithCacheHit') && this.lastPostId !== id) {
         this.lastPostId = id
-        if (uiStore.history.uiState == null || uiStore.history.uiState[PostComp.id] == null) return
-        const y = uiStore.history.uiState[PostComp.id].scrollY
+        const data = uiStore.history.uiStateFor(PostComp.id)
+        if (data == null) {
+          requestAnimationFrame(() => document.body.scrollTop = 0)
+          return
+        }
+        const y = data.scrollY
         console.log('restore scroll position', y)
         // TODO: Why is delay needed? And why is scroll position not restored exactly when at the very bottom?
         requestAnimationFrame(() => document.body.scrollTop = y)

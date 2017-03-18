@@ -1,18 +1,29 @@
-import {observable, action, computed, runInAction} from 'mobx'
+import {observable, action} from 'mobx'
 import {Route, jsonToRoute} from 'app/router'
-import {UiStore, uiStore} from 'app/store'
 
-type SaveUiStateListener = (route: Route) => { name: string, data: any } | null
+type SaveUiStateListener = (route: Route) => { id: string, data: any } | null
 
 export class History {
-  @observable cursor = 0
-  uiStates: any = {}
-  @computed get uiState() { return this.uiStates[this.cursor] }
+  uiStates: {[url:string]: {[id:string]: any}} = {}
+  get uiState() { return this.uiStates[window.location.href] }
+  uiStateFor(id: string) { return this.uiState != null ? this.uiState[id] : null }
   saveUiStateListeners = new Array<SaveUiStateListener>()
+  @observable cursor = 0 // Unfortunately, not reliable as popstate is not called in all necessary situations
   @observable routes = observable.array<Route>() // Only necessary to visualize history
-  popstated = false
+  popstated = false // TODO: Still needed?
 
-  constructor(private store: UiStore) {}
+  constructor() {
+    let prevUrl = window.location.href
+    setInterval(() => {
+      if (window.location.href !== prevUrl) {
+        if (this.uiStates['temp'] != null) {
+          this.uiStates[prevUrl] = this.uiStates['temp']
+          delete this.uiStates['temp']
+        }
+        prevUrl = window.location.href
+      }
+    }, 10)
+  }
 
   addSaveUiStateListener = (listener: SaveUiStateListener): SaveUiStateListener => {
     this.saveUiStateListeners.push(listener)
@@ -23,12 +34,12 @@ export class History {
     this.saveUiStateListeners.splice(this.saveUiStateListeners.indexOf(listener), 1)
   }
 
-  private callSaveUiStateListeners = (route: Route) => {
+  callSaveUiStateListeners = (route: Route, url: string) => {
     for (const listener of this.saveUiStateListeners) {
       const res = listener(route)
-      const saved = this.uiStates[this.cursor] || {}
-      if (res != null) saved[res.name] = res.data
-      this.uiStates[this.cursor] = saved
+      const saved = this.uiStates[url] || {}
+      if (res != null) saved[res.id] = res.data
+      this.uiStates[url] = saved
     }
   }
 
@@ -53,7 +64,7 @@ export class History {
 
   private ignoreNextExitCheck = false
   private preventNavigationTemporarily = false
-  private handlePopstate = async (e) => {
+  @action private handlePopstate = (e) => {
     const savedCursor = e.state
     if (!this.ignoreNextExitCheck && !this.canExitCurrentRoute(e)) {
       // beforeunload is not called when clicking on back button (kind of understandable)
@@ -73,17 +84,13 @@ export class History {
     }
     if (savedCursor == null) return
     this.popstated = true
-    runInAction(() => {
-      this.callSaveUiStateListeners(this.currentRoute)
-      this.cursor = savedCursor
-      //uiStore.route = this.routes[this.cursor]
-    })
+    this.cursor = savedCursor
   }
 
   get canNavigate() { return !this.preventNavigationTemporarily }
 
   private persist = () => {
-    this.callSaveUiStateListeners(this.currentRoute)
+    this.callSaveUiStateListeners(this.currentRoute, window.location.href)
     sessionStorage.setItem('routes', JSON.stringify(this.routes.map(r => r.toJson())))
     sessionStorage.setItem('historyCur', JSON.stringify(this.cursor))
     sessionStorage.setItem('uiStates', JSON.stringify(this.uiStates))
@@ -112,7 +119,7 @@ export class History {
 
   @action push = (route: Route) => {
     if (!this.canExitCurrentRoute()) return
-    this.callSaveUiStateListeners(this.currentRoute)
+    this.callSaveUiStateListeners(this.currentRoute, window.location.href)
     this.cursor += 1
     this.routes.length = this.cursor
     this.routes.push(route)
@@ -135,7 +142,6 @@ export class History {
     if (!this.canExitCurrentRoute()) return
     const dif = index - this.cursor
     if (dif === 0) return
-    this.callSaveUiStateListeners(this.currentRoute)
     this.cursor = this.cursor + dif
     window.history.go(dif)
   }
